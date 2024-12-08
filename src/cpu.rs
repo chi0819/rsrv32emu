@@ -1,3 +1,5 @@
+use crate::peripheral::mem::*;
+
 pub enum MSTATE {
     UNPRIVILEGE,
     PRIVILEGE,
@@ -5,7 +7,7 @@ pub enum MSTATE {
 }
 
 impl MSTATE {
-    pub fn read(&self) {
+    pub fn show(&self) {
         match self {
             Self::UNPRIVILEGE => println!("Current is unprivilege mode"),
             Self::PRIVILEGE => println!("Current is privilege mode"),
@@ -36,12 +38,20 @@ impl RegFile {
     pub fn write(&mut self, index: usize, value: u32) {
         self.registers[index] = value;
     }
+
+    /* Debug Usage Functions:
+     *
+     */
+    pub fn show_regs(&self) {
+        
+    }
 }
 
 pub struct CPU {
     pc: u32,
     state: MSTATE,
-    registers: RegFile
+    registers: RegFile,
+    ram: RAM
 }
 
 impl CPU {
@@ -49,11 +59,24 @@ impl CPU {
         Self {
             pc: 0,
             state: MSTATE::UNPRIVILEGE,
-            registers: RegFile::new()
+            registers: RegFile::new(),
+            ram: RAM::new()
         }
     }
 
-    pub fn run(&mut self, ram: &mut [u8]) {
+    pub fn run(&mut self) {
         println!("Hello");
+    }
+
+    pub fn mem_loader(&mut self, file_path: &str) {
+        self.ram.loader(file_path);
+    }
+
+    /* Debug Usage Functions:
+     *
+     */
+
+    pub fn show_mem(&self) {
+        self.ram.show_mem();
     }
 }
