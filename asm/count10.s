@@ -13,6 +13,9 @@ _loop:
 _end:
     la a0, counter
     sw t0, 0(a0)
+_return:
+    li a0, 10
+    ecall
 
 .data
     counter: .word 0
