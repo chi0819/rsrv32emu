@@ -5,12 +5,14 @@ use std::fs;
 /* Declare Modules */
 pub mod riscv;
 pub mod cpu;
+pub mod cores;
 pub mod peripheral;
-pub mod preprocess;
+pub mod entry;
 
 /* Import Modules */
+use riscv::*;
 use cpu::*;
-use preprocess::*;
+use entry::*;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -23,15 +25,15 @@ fn main() -> io::Result<()> {
 
     if args[1].as_str() != "all" {
         let mut cpu = CPU::new();
-        process_file(&format!("bin/{}.bin", &args[1]), &mut cpu, &option)?;
+        entry(&format!("bin/{}.bin", &args[1]), &mut cpu, &option)?;
     } else {
         let dir_path = "bin";
         let paths = fs::read_dir(dir_path)?;
         for path in paths {
-            if let Ok(entry) = path {
-                let file_path = entry.path();
+            if let Ok(file) = path {
+                let file_path = file.path();
                 let mut cpu = CPU::new();
-                process_file(file_path.to_str().unwrap(), &mut cpu, &option)?;
+                entry(file_path.to_str().unwrap(), &mut cpu, &option)?;
             }
         }
     }

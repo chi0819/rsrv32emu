@@ -1,4 +1,9 @@
+use crate::riscv::*;
+use num_traits::FromPrimitive;
+use num_derive::FromPrimitive;
 use crate::peripheral::mem::*;
+use crate::cores::registers::*;
+use crate::cores::decoder::*;
 
 pub enum MSTATE {
     UNPRIVILEGE,
@@ -16,39 +21,8 @@ impl MSTATE {
     }
 }
 
-pub struct RegFile {
-   registers: [u32; 32]
-}
-
-impl RegFile {
-    pub fn new() -> Self {
-        Self {
-            registers: [0; 32]
-        }
-    }
-
-    pub fn read(&self, index: usize) -> u32 {
-        if index == 0 {
-            0
-        } else {
-            self.registers[index]
-        }
-    }
-
-    pub fn write(&mut self, index: usize, value: u32) {
-        self.registers[index] = value;
-    }
-
-    /* Debug Usage Functions:
-     *
-     */
-    pub fn show_regs(&self) {
-        
-    }
-}
-
 pub struct CPU {
-    pc: u32,
+    pc: usize,
     state: MSTATE,
     registers: RegFile,
     ram: RAM
@@ -65,11 +39,22 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
-        println!("Hello");
+        let instruction: Instruction = decoder(self).unwrap();
+        println!("{} x{}, x{}, x{}",
+            InstructionsTypeI::from_u32(instruction.funct3.clone().unwrap()).unwrap().to_string().to_lowercase(),
+            &instruction.rd.unwrap(),
+            &instruction.rs1.unwrap(),
+            &instruction.imm.unwrap())
     }
 
     pub fn mem_loader(&mut self, file_path: &str) {
         self.ram.loader(file_path);
+    }
+
+    pub fn fetch(&mut self) -> u32 {
+        let instruction: u32 = self.ram.load_word(&self.pc);
+        self.pc += 4;
+        instruction
     }
 
     /* Debug Usage Functions:
