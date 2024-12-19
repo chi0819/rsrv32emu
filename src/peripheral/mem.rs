@@ -1,10 +1,13 @@
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use rand::{thread_rng, Rng};
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
+use std::vec::Vec;
 
 use crate::riscv::*;
-use std::vec::Vec;
+use crate::utils::disassemble;
 
 pub struct RAM {
     ram: Vec<u8>,
@@ -63,12 +66,91 @@ impl RAM {
      */
 
     pub fn show_mem(&self) {
-        println!("RISC-V Instruction");
+        println!("Show Disassemble RISC-V Instruction");
         let mut address: u32 = 0x0000_0000;
         for chunk in self.ram.chunks(4) {
             if chunk.len() == 4 {
                 let instruction = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
-                println!("0x{:04x}: 0x{:08x}", &address, &instruction);
+                let instruction_d = disassemble(instruction).unwrap();
+                let disassemble_instruction: String =
+                    match InstructionOpcode::from_u32(instruction_d.opcode.clone()).unwrap() {
+                        InstructionOpcode::I => format!(
+                            "{} x{}, x{}, {}",
+                            InstructionTypeI::from_u32(instruction_d.funct3.clone().unwrap())
+                                .unwrap()
+                                .to_string()
+                                .to_lowercase(),
+                            instruction_d.rd.unwrap(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        InstructionOpcode::L => format!(
+                            "{} x{}, x{}, {}",
+                            InstructionTypeL::from_u32(instruction_d.funct3.clone().unwrap())
+                                .unwrap()
+                                .to_string()
+                                .to_lowercase(),
+                            instruction_d.rd.unwrap(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        InstructionOpcode::S => format!(
+                            "{} x{}, x{}, {}",
+                            InstructionTypeS::from_u32(instruction_d.funct3.clone().unwrap())
+                                .unwrap()
+                                .to_string()
+                                .to_lowercase(),
+                            instruction_d.rs2.unwrap(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        InstructionOpcode::R => format!(
+                            "{} x{}, x{}, x{}",
+                            InstructionTypeR::from_u32(instruction_d.funct3.clone().unwrap())
+                                .unwrap()
+                                .to_string()
+                                .to_lowercase(),
+                            instruction_d.rd.unwrap(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.rs2.unwrap()
+                        ),
+                        InstructionOpcode::B => format!(
+                            "{} x{}, x{}, {:x}",
+                            InstructionTypeB::from_u32(instruction_d.funct3.clone().unwrap())
+                                .unwrap()
+                                .to_string()
+                                .to_lowercase(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.rs2.unwrap(),
+                            instruction_d.imm.unwrap() + address
+                        ),
+                        InstructionOpcode::JAL => format!(
+                            "jal x{}, {}",
+                            instruction_d.rd.unwrap(),
+                            ((instruction_d.imm.unwrap() as i32) << 11) >> 11
+                        ),
+                        InstructionOpcode::JALR => format!(
+                            "jalr x{}, x{}, {}",
+                            instruction_d.rd.unwrap(),
+                            instruction_d.rs1.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        InstructionOpcode::LUI => format!(
+                            "lui x{}, {}",
+                            instruction_d.rd.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        InstructionOpcode::AUIPC => format!(
+                            "lui x{}, {}",
+                            instruction_d.rd.unwrap(),
+                            instruction_d.imm.unwrap()
+                        ),
+                        _ => String::from("NOT INSTRUCTION"),
+                    };
+                println!(
+                    "0x{:04x}: 0x{:08x} {}",
+                    &address, &instruction, &disassemble_instruction
+                );
             } else {
                 eprintln!("Warning: Incomplete instruction at the end of the RAM");
             }
@@ -102,7 +184,7 @@ mod tests {
         for _ in 0..100 {
             let mut ram = RAM::new();
             let half: u16 = rng.gen_range(u16::MIN..u16::MAX);
-            let address: usize = rng.gen_range(BASE_ADDRESS..RAM_SIZE - 4);
+            let address: usize = rng.gen_range(BASE_ADDRESS..RAM_SIZE - 2);
             ram.store_half(&address, &half);
             assert_eq!(&half, &ram.load_half(&address));
         }
@@ -115,7 +197,7 @@ mod tests {
         for _ in 0..100 {
             let mut ram = RAM::new();
             let byte: u8 = rng.gen_range(u8::MIN..u8::MAX);
-            let address: usize = rng.gen_range(BASE_ADDRESS..RAM_SIZE - 4);
+            let address: usize = rng.gen_range(BASE_ADDRESS..RAM_SIZE - 1);
             ram.store_byte(&address, &byte);
             assert_eq!(&byte, &ram.load_byte(&address));
         }

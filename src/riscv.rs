@@ -74,6 +74,14 @@ macro_rules! immI {
     };
 }
 
+/* Generate Immediate for L-Type Instruction */
+#[macro_export]
+macro_rules! immL {
+    ($instruction:expr) => {
+        (($instruction >> 20) & 0xFFF)
+    };
+}
+
 /* Generate Immediate for S-Type Instruction */
 #[macro_export]
 macro_rules! immS {
@@ -130,9 +138,11 @@ pub enum Mode {
 pub enum InstructionOpcode {
     I = 0b0010011,
     S = 0b0100011,
+    L = 0b0000011,
     R = 0b0110011,
     B = 0b1100011,
     JAL = 0b1101111,
+    JALR = 0b1100111,
     LUI = 0b0110111,
     AUIPC = 0b0010111,
     CSR = 0b1110011,
@@ -140,7 +150,7 @@ pub enum InstructionOpcode {
 
 #[repr(u8)]
 #[derive(Debug, FromPrimitive, Display)]
-pub enum InsturcitonTypeL {
+pub enum InstructionTypeL {
     LB = 0b000,
     LH = 0b001,
     LW = 0b010,
@@ -150,7 +160,7 @@ pub enum InsturcitonTypeL {
 
 #[repr(u8)]
 #[derive(Debug, FromPrimitive, Display)]
-pub enum InstructionsTypeI {
+pub enum InstructionTypeI {
     ADDI = 0b000,
     SLLI = 0b001,
     SLTI = 0b010,
@@ -163,7 +173,7 @@ pub enum InstructionsTypeI {
 
 #[repr(u8)]
 #[derive(Debug, FromPrimitive, Display)]
-pub enum InstructionsTypeS {
+pub enum InstructionTypeS {
     SB = 0b000,
     SH = 0b001,
     SW = 0b010,
@@ -171,7 +181,7 @@ pub enum InstructionsTypeS {
 
 #[repr(u8)]
 #[derive(FromPrimitive, Debug, Display)]
-pub enum InstructionsTypeR {
+pub enum InstructionTypeR {
     ADDSUB = 0b000,
     SLL = 0b001,
     SLT = 0b010,
@@ -184,7 +194,7 @@ pub enum InstructionsTypeR {
 
 #[repr(u8)]
 #[derive(FromPrimitive, Debug, Display)]
-pub enum InstructionsTypeB {
+pub enum InstructionTypeB {
     BEQ = 0b000,
     BNE = 0b001,
     BLT = 0b100,

@@ -15,7 +15,7 @@ pub fn decoder(cpu: &mut CPU) -> Result<Instruction, io::Error> {
         InstructionOpcode::I => Some(immI!(&instruction)),
         InstructionOpcode::S => Some(immS!(&instruction)),
         InstructionOpcode::B => Some(immB!(&instruction)),
-        InstructionOpcode::JAL => Some(immJ!(&instruction)),
+        InstructionOpcode::JALR => Some(immJ!(&instruction)),
         InstructionOpcode::LUI | InstructionOpcode::AUIPC => Some(immU!(&instruction)),
         _ => None,
     };
@@ -53,7 +53,7 @@ pub fn decoder(cpu: &mut CPU) -> Result<Instruction, io::Error> {
         | InstructionOpcode::I
         | InstructionOpcode::LUI
         | InstructionOpcode::AUIPC
-        | InstructionOpcode::JAL => Some(rd!(&instruction)),
+        | InstructionOpcode::JALR => Some(rd!(&instruction)),
         _ => None,
     };
 

@@ -26,3 +26,6 @@ $(BIN_FILES): $(ELF_FILES)
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+run:
+	cargo run $1 $2

@@ -40,16 +40,6 @@ impl CPU {
 
     pub fn run(&mut self) {
         let instruction: Instruction = decoder(self).unwrap();
-        println!(
-            "{} x{}, x{}, x{}",
-            InstructionsTypeI::from_u32(instruction.funct3.clone().unwrap())
-                .unwrap()
-                .to_string()
-                .to_lowercase(),
-            &instruction.rd.unwrap(),
-            &instruction.rs1.unwrap(),
-            &instruction.imm.unwrap()
-        )
     }
 
     pub fn mem_loader(&mut self, file_path: &str) {
