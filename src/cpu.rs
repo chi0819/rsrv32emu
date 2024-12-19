@@ -1,14 +1,14 @@
-use crate::riscv::*;
-use num_traits::FromPrimitive;
-use num_derive::FromPrimitive;
-use crate::peripheral::mem::*;
-use crate::cores::registers::*;
 use crate::cores::decoder::*;
+use crate::cores::registers::*;
+use crate::peripheral::mem::*;
+use crate::riscv::*;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 pub enum MSTATE {
     UNPRIVILEGE,
     PRIVILEGE,
-    MACHINE
+    MACHINE,
 }
 
 impl MSTATE {
@@ -25,7 +25,7 @@ pub struct CPU {
     pc: usize,
     state: MSTATE,
     registers: RegFile,
-    ram: RAM
+    ram: RAM,
 }
 
 impl CPU {
@@ -34,17 +34,22 @@ impl CPU {
             pc: 0,
             state: MSTATE::UNPRIVILEGE,
             registers: RegFile::new(),
-            ram: RAM::new()
+            ram: RAM::new(),
         }
     }
 
     pub fn run(&mut self) {
         let instruction: Instruction = decoder(self).unwrap();
-        println!("{} x{}, x{}, x{}",
-            InstructionsTypeI::from_u32(instruction.funct3.clone().unwrap()).unwrap().to_string().to_lowercase(),
+        println!(
+            "{} x{}, x{}, x{}",
+            InstructionsTypeI::from_u32(instruction.funct3.clone().unwrap())
+                .unwrap()
+                .to_string()
+                .to_lowercase(),
             &instruction.rd.unwrap(),
             &instruction.rs1.unwrap(),
-            &instruction.imm.unwrap())
+            &instruction.imm.unwrap()
+        )
     }
 
     pub fn mem_loader(&mut self, file_path: &str) {

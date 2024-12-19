@@ -1,34 +1,34 @@
+use rand::{thread_rng, Rng};
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
-use rand::{thread_rng, Rng};
 
-use std::vec::Vec;
 use crate::riscv::*;
+use std::vec::Vec;
 
 pub struct RAM {
-    ram: Vec<u8>
+    ram: Vec<u8>,
 }
 
 impl RAM {
     pub fn new() -> Self {
         Self {
-            ram: vec![0u8; RAM_SIZE]
+            ram: vec![0u8; RAM_SIZE],
         }
     }
 
     pub fn load_word(&self, address: &usize) -> u32 {
-        let bytes: [u8; 4] = self.ram.as_slice()[*address..=*address+3]
-                                     .try_into()
-                                     .expect("Read word error");
+        let bytes: [u8; 4] = self.ram.as_slice()[*address..=*address + 3]
+            .try_into()
+            .expect("Read word error");
 
         u32::from_le_bytes(bytes)
     }
 
     pub fn load_half(&self, address: &usize) -> u16 {
-        let bytes: [u8; 2] = self.ram.as_slice()[*address..=*address+1]
-                                     .try_into()
-                                     .expect("Read half error");
+        let bytes: [u8; 2] = self.ram.as_slice()[*address..=*address + 1]
+            .try_into()
+            .expect("Read half error");
 
         u16::from_le_bytes(bytes)
     }
@@ -39,12 +39,12 @@ impl RAM {
 
     pub fn store_word(&mut self, address: &usize, value: &u32) {
         let bytes = value.clone().to_le_bytes();
-        self.ram[*address..=*address+3].copy_from_slice(&bytes);
+        self.ram[*address..=*address + 3].copy_from_slice(&bytes);
     }
 
     pub fn store_half(&mut self, address: &usize, value: &u16) {
         let bytes = value.clone().to_le_bytes();
-        self.ram[*address..=*address+1].copy_from_slice(&bytes);
+        self.ram[*address..=*address + 1].copy_from_slice(&bytes);
     }
 
     pub fn store_byte(&mut self, address: &usize, value: &u8) {
@@ -75,7 +75,6 @@ impl RAM {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

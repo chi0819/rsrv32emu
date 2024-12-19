@@ -1,41 +1,78 @@
+use clap::{Arg, ArgAction, Command};
 use std::env;
-use std::io;
 use std::fs;
+use std::io;
 
 /* Declare Modules */
-pub mod riscv;
-pub mod cpu;
 pub mod cores;
-pub mod peripheral;
+pub mod cpu;
 pub mod entry;
+pub mod peripheral;
+pub mod riscv;
 
 /* Import Modules */
-use riscv::*;
 use cpu::*;
 use entry::*;
+use riscv::*;
 
 fn main() -> io::Result<()> {
-    let args: Vec<String> = env::args().collect();
+    let matches = Command::new("Rust RISC-V 32 Emulator")
+        .about("RSRV32EMU Options")
+        .arg(
+            Arg::new("run")
+                .long("run")
+                .help("run specific binary code")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("show")
+                .long("show")
+                .help("show the disassembled binary code with specific binary file")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("file")
+                .long("file")
+                .help("user choose target binary file")
+                .value_name("SELECT BINARY FILE IN THE BIN/")
+                .num_args(1)
+                .required(false),
+        )
+        .get_matches();
 
-    let option: Option<Mode> = match args[2].as_str() {
-        "run" => Some(Mode::RUN),
-        "show" => Some(Mode::SHOWINSTRUCTION),
-        _ => None
-    };
-
-    if args[1].as_str() != "all" {
-        let mut cpu = CPU::new();
-        entry(&format!("bin/{}.bin", &args[1]), &mut cpu, &option)?;
-    } else {
-        let dir_path = "bin";
-        let paths = fs::read_dir(dir_path)?;
-        for path in paths {
-            if let Ok(file) = path {
-                let file_path = file.path();
+    if matches.get_flag("show") {
+        match matches.get_one::<String>("file") {
+            Some(filename) => {
                 let mut cpu = CPU::new();
-                entry(file_path.to_str().unwrap(), &mut cpu, &option)?;
+                entry(
+                    &format!("bin/{}.bin", &filename),
+                    &mut cpu,
+                    &Mode::SHOWINSTRUCTION,
+                )?;
+            }
+            Some(_) | None => {
+                eprintln!("Error: In show mode must specify the target binary file");
+                std::process::exit(1);
             }
         }
+    } else if matches.get_flag("run") {
+        match matches.get_one::<String>("file") {
+            Some(filename) => {
+                let mut cpu = CPU::new();
+                entry(
+                    &format!("bin/{}.bin", &filename),
+                    &mut cpu,
+                    &Mode::RUN,
+                )?;
+            }
+            Some(_) | None => {
+                eprintln!("Error: In run mode must specify the target binary file");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        eprintln!("Error: Please select which mode you want to run also provide the target binary file");
+        std::process::exit(1);
     }
 
     Ok(())
