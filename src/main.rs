@@ -4,11 +4,12 @@ use std::fs;
 use std::io;
 
 /* Declare Modules */
-pub mod cores;
-pub mod cpu;
-pub mod entry;
-pub mod peripheral;
 pub mod riscv;
+pub mod cpu;
+pub mod cores;
+pub mod peripheral;
+pub mod utils;
+pub mod entry;
 
 /* Import Modules */
 use cpu::*;

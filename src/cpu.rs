@@ -63,7 +63,7 @@ impl CPU {
     }
 
     /* Debug Usage Functions:
-     *
+     * show_mem: Display the memory layout when load the program into memory
      */
 
     pub fn show_mem(&self) {

@@ -59,6 +59,7 @@ impl RAM {
     }
 
     /* Debug Usage Functions:
+     * show_mem: Display the memory layout after load the program to memory
      */
 
     pub fn show_mem(&self) {
